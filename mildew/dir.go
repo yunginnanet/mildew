@@ -4,10 +4,27 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/gocolly/colly/v2"
 )
+
+const defUserAgent = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:136.0) Gecko/20100101 Firefox/136.0"
+
+var head = make(http.Header)
+
+func init() {
+	head.Add("User-Agent", defUserAgent)
+	head.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+	head.Add("Accept-Language", "en-US,en;q=0.5")
+	head.Add("Upgrade-Insecure-Requests", "1")
+	head.Add("Sec-Fetch-Site", "none")
+	head.Add("Sec-Fetch-User", "?1")
+	head.Add("Accept-Encoding", "gzip, deflate, br, zstd")
+	head.Add("Priority", "u=0, i")
+	head.Add("Te", "trailers")
+}
 
 // ScrapeDirs scrapes all DoD website directories and saves to Mildew object's Subs field
 func (mw *Mildew) ScrapeDirs(ctx context.Context) error {
@@ -18,6 +35,9 @@ func (mw *Mildew) ScrapeDirs(ctx context.Context) error {
 		// Initialize base colly collector to be used by each directory scraper function
 		// TODO tune colly options
 		c := colly.NewCollector()
+		c.UserAgent = defUserAgent
+		c.Headers = &head
+
 		var err error
 
 		err = dirDod(c, dirStream)
